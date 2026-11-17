@@ -1,0 +1,115 @@
+{
+  "name": "@luckylillia/plugin-webqq",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "在 LuckyLillia WebUI 中像 QQ 客户端一样收发 NTQQ 消息",
+  "main": "./lib/index.js",
+  "types": "./lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "LICENSE"
+  ],
+  "author": "LuckyLilliaDev",
+  "license": "GPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LuckyLilliaDev/lucky-lillia-plugin-webqq.git"
+  },
+  "engines": {
+    "node": ">=22.15"
+  },
+  "keywords": [
+    "luckylillia-plugin",
+    "webqq",
+    "ntqq"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "tsc --noEmit && tsc --noEmit -p tsconfig.client.json",
+    "test": "vitest run",
+    "prepack": "npm run check && npm run build"
+  },
+  "dependencies": {
+    "hono": "^4.13.5"
+  },
+  "peerDependencies": {
+    "@luckylillia/plugin-nt-protocol": "^1.0.1",
+    "@luckylillia/plugin-sdk": "^1.0.1",
+    "cordis": "4.0.0-rc.11",
+    "react": "^19.0.0",
+    "schemastery": "^3.18.0",
+    "cosmokit": "^1.8.1",
+    "react-dom": "^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@luckylillia/plugin-nt-protocol": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@luckylillia/plugin-nt-protocol": "^1.0.1",
+    "@luckylillia/plugin-sdk": "^1.0.1",
+    "@tailwindcss/postcss": "^4.2.0",
+    "@types/node": "^24.12.4",
+    "@types/react": "^19.2.17",
+    "esbuild": "~0.28.0",
+    "lucide-react": "^1.25.0",
+    "postcss": "^8.5.0",
+    "react": "^19.2.7",
+    "tailwindcss": "^4.2.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11",
+    "@tanstack/react-virtual": "^3.14.6",
+    "@types/react-dom": "^19.2.3",
+    "react-dom": "^19.2.7",
+    "zustand": "^5.0.14"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "llbot": {
+    "title": "WebQQ",
+    "description": "在 WebUI 里像 QQ 客户端一样收发消息，查看好友、群聊、通知和群文件。",
+    "category": "tool",
+    "icon": "message-square",
+    "dependencies": {
+      "@luckylillia/plugin-nt-protocol": "^1.0.1"
+    },
+    "service": {
+      "required": [
+        "webuiServer",
+        "app",
+        "store",
+        "qqProtocol",
+        "ntMsgApi",
+        "ntFileApi",
+        "ntUserApi",
+        "ntGroupApi",
+        "ntFriendApi"
+      ],
+      "optional": [
+        "ffmpeg"
+      ],
+      "labels": {
+        "qqProtocol": "NTQQ 协议",
+        "app": "NTQQ 账号登录",
+        "store": "NTQQ 账号登录"
+      }
+    },
+    "webui": "./lib/client/index.js"
+  }
+}
