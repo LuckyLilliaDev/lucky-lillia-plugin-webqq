@@ -14,6 +14,7 @@
   },
   "files": [
     "lib",
+    "assets",
     "LICENSE"
   ],
   "author": "LuckyLilliaDev",
@@ -85,7 +86,7 @@
     "title": "WebQQ",
     "description": "在 WebUI 里像 QQ 客户端一样收发消息，查看好友、群聊、通知和群文件。",
     "category": "tool",
-    "icon": "message-square",
+    "icon": "assets/icon.svg",
     "dependencies": {
       "@luckylillia/plugin-nt-protocol": "^1.0.1"
     },
