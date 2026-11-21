@@ -1,6 +1,6 @@
 {
-  "name": "@luckylillia/plugin-webqq",
-  "version": "1.0.0",
+  "name": "@luckylillia-dev/plugin-webqq",
+  "version": "1.0.1",
   "type": "module",
   "description": "在 LuckyLillia WebUI 中像 QQ 客户端一样收发 NTQQ 消息",
   "main": "./lib/index.js",
@@ -41,16 +41,16 @@
     "hono": "^4.13.5"
   },
   "peerDependencies": {
-    "@luckylillia/plugin-nt-protocol": "^1.0.1",
-    "@luckylillia/plugin-sdk": "^1.0.1",
+    "@luckylillia-dev/plugin-nt-protocol": "^1.0.1",
+    "@luckylillia-dev/plugin-sdk": "^1.0.1",
     "cordis": "4.0.0-rc.11",
-    "react": "^19.0.0",
-    "schemastery": "^3.18.0",
     "cosmokit": "^1.8.1",
-    "react-dom": "^19.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "schemastery": "^3.18.0"
   },
   "peerDependenciesMeta": {
-    "@luckylillia/plugin-nt-protocol": {
+    "@luckylillia-dev/plugin-nt-protocol": {
       "optional": true
     },
     "react": {
@@ -61,21 +61,20 @@
     }
   },
   "devDependencies": {
-    "@luckylillia/plugin-nt-protocol": "^1.0.1",
-    "@luckylillia/plugin-sdk": "^1.0.1",
+    "@luckylillia-dev/plugin-sdk": "npm:@luckylillia/plugin-sdk@^1.0.1",
     "@tailwindcss/postcss": "^4.2.0",
+    "@tanstack/react-virtual": "^3.14.6",
     "@types/node": "^24.12.4",
     "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "esbuild": "~0.28.0",
     "lucide-react": "^1.25.0",
     "postcss": "^8.5.0",
     "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "tailwindcss": "^4.2.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11",
-    "@tanstack/react-virtual": "^3.14.6",
-    "@types/react-dom": "^19.2.3",
-    "react-dom": "^19.2.7",
     "zustand": "^5.0.14"
   },
   "publishConfig": {
@@ -88,7 +87,7 @@
     "category": "tool",
     "icon": "assets/icon.svg",
     "dependencies": {
-      "@luckylillia/plugin-nt-protocol": "^1.0.1"
+      "@luckylillia-dev/plugin-nt-protocol": "^1.0.1"
     },
     "service": {
       "required": [

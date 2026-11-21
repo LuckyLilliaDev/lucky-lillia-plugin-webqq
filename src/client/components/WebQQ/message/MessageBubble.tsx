@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from 'react'
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react'
-import { Slot, useSlotMatches } from '@luckylillia/plugin-sdk/webui'
+import { Slot, useSlotMatches } from '@luckylillia-dev/plugin-sdk/webui'
 import type { RawMessage, GroupMemberItem } from '../../../types/webqq'
 import { formatMessageTime, getSelfUid, getSelfUin, getUserAvatar, getUserDisplayName, setEmojiLike } from '../../../utils/webqqApi'
 import { slotMessage } from '../../../utils/slotMessage'

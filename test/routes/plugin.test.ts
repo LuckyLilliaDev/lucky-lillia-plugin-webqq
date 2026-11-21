@@ -4,7 +4,7 @@ import path from 'node:path'
 import { Context, Service, FiberState, type Fiber } from 'cordis'
 import { Hono } from 'hono'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import type { FetchHandler } from '@luckylillia/plugin-sdk'
+import type { FetchHandler } from '@luckylillia-dev/plugin-sdk'
 import * as WebQQ from '../../src/index'
 
 let ctx: Context

@@ -4,7 +4,7 @@ import { createMockContext } from '../helpers/mockContext'
 import { createMessagesRoutes } from '../../src/messages'
 
 // Mock heavy dependencies
-vi.mock('@luckylillia/plugin-nt-protocol/api', async original => ({
+vi.mock('@luckylillia-dev/plugin-nt-protocol/api', async original => ({
   ...await original<object>(),
   SendElement: {
     face: vi.fn((id: number) => ({ elementType: 6, elementId: '', faceElement: { faceIndex: id } })),

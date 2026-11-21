@@ -1,6 +1,6 @@
-import type * as NT from '@luckylillia/plugin-nt-protocol/types'
-export { ChatType, ElementType } from '@luckylillia/plugin-nt-protocol/types'
-export type { TextElement, PicElement, FileElement, FaceElement, ArkElement } from '@luckylillia/plugin-nt-protocol/types'
+import type * as NT from '@luckylillia-dev/plugin-nt-protocol/types'
+export { ChatType, ElementType } from '@luckylillia-dev/plugin-nt-protocol/types'
+export type { TextElement, PicElement, FileElement, FaceElement, ArkElement } from '@luckylillia-dev/plugin-nt-protocol/types'
 
 // The WebQQ JSON representation also carries optional NT client fields and locally cached UI state.
 export interface GrayTipElement {

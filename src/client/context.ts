@@ -1,4 +1,4 @@
-import type { WebUIContext } from '@luckylillia/plugin-sdk/webui'
+import type { WebUIContext } from '@luckylillia-dev/plugin-sdk/webui'
 
 let current: WebUIContext | undefined
 

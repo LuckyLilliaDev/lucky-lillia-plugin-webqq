@@ -1,5 +1,5 @@
 import { Context } from 'cordis'
-import { FriendReqType } from '@luckylillia/plugin-nt-protocol/api'
+import { FriendReqType } from '@luckylillia-dev/plugin-nt-protocol/api'
 import { Hono } from 'hono'
 import { decodeGroupRequestFlag, encodeGroupRequestFlag } from './utils'
 

@@ -1,5 +1,5 @@
 import type { Context } from 'cordis'
-import type { FFmpegAPI } from '@luckylillia/plugin-sdk'
+import type { FFmpegAPI } from '@luckylillia-dev/plugin-sdk'
 import { randomUUID } from 'node:crypto'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -7,7 +7,7 @@ import { unlink } from 'node:fs/promises'
 
 export class FFmpegUnavailableError extends Error {
   readonly code = 'FFMPEG_PLUGIN_MISSING'
-  constructor(message = '未安装或未启用 FFmpeg 插件（lucky-lillia-plugin-ffmpeg），请安装并启用后重试') {
+  constructor(message = '未安装或未启用 FFmpeg 插件（@luckylillia-dev/plugin-ffmpeg），请安装并启用后重试') {
     super(message)
     this.name = 'FFmpegUnavailableError'
   }

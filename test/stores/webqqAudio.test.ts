@@ -9,7 +9,7 @@ describe('WebQQ audio request feedback', () => {
   })
 
   it('preserves the backend install instruction for the playback toast', async () => {
-    const message = '未安装或未启用 FFmpeg 插件（lucky-lillia-plugin-ffmpeg），请安装并启用后重试'
+    const message = '未安装或未启用 FFmpeg 插件（@luckylillia-dev/plugin-ffmpeg），请安装并启用后重试'
     fetchAudio.mockResolvedValue(Response.json({ success: false, code: 'FFMPEG_PLUGIN_MISSING', message }, { status: 503 }))
     await expect(getAudioBlob('voice-id', true)).rejects.toThrow(message)
     expect(fetchAudio).toHaveBeenCalledOnce()

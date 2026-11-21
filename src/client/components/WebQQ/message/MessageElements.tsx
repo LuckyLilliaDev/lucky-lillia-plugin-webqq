@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo, useRef } from 'react'
 import { Loader2, Mic, Play, Pause, ChevronRight, X, FileText } from 'lucide-react'
 import { createPortal } from 'react-dom'
-import { Slot, type WebQQElement } from '@luckylillia/plugin-sdk/webui'
+import { Slot, type WebQQElement } from '@luckylillia-dev/plugin-sdk/webui'
 import type { MessageElement, RawMessage } from '../../../types/webqq'
 import { webui } from '../../../context'
 import { slotMessage } from '../../../utils/slotMessage'

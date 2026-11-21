@@ -1,6 +1,6 @@
 import { Context } from 'cordis'
 import { SSEStreamingApi } from 'hono/streaming'
-import { ChatType, RawMessage } from '@luckylillia/plugin-nt-protocol/api'
+import { ChatType, RawMessage } from '@luckylillia-dev/plugin-nt-protocol/api'
 import { serializeResult } from './utils'
 import { resolveWatchPicUrls } from './messages'
 

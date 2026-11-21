@@ -2,7 +2,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMe
 import { createPortal } from 'react-dom'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Users, Loader2, ArrowLeft, ArrowDown, FolderOpen, Forward, X } from 'lucide-react'
-import { Slot } from '@luckylillia/plugin-sdk/webui'
+import { Slot } from '@luckylillia-dev/plugin-sdk/webui'
 import type { ChatSession, RawMessage } from '../../types/webqq'
 import { getMessages, getSelfUid, getSelfUin, getUserProfile, UserProfile, kickGroupMember, getGroupProfile, GroupProfile, quitGroup, muteGroupMember, setMemberTitle, forwardSingleMessage, forwardMultiMessages } from '../../utils/webqqApi'
 import { useWebQQStore, hasVisitedChat, markChatVisited } from '../../stores/webqqStore'

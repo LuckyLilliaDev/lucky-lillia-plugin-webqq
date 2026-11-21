@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
-import { useBots, usePageView, useSidebar } from '@luckylillia/plugin-sdk/webui'
+import { useBots, usePageView, useSidebar } from '@luckylillia-dev/plugin-sdk/webui'
 import WebQQPage from './components/WebQQ/WebQQPage'
 import { hydrateWebQQStore } from './stores/webqqStore'
 import { useWebQQSettings } from './settings'

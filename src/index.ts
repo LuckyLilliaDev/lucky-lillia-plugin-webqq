@@ -12,10 +12,10 @@ import { Hono } from 'hono'
 import { SSEStreamingApi, streamSSE } from 'hono/streaming'
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
-import type {} from '@luckylillia/plugin-sdk'
-import type {} from '@luckylillia/plugin-nt-protocol/contracts'
-import { SendElement, installFFmpegBridge } from '@luckylillia/plugin-nt-protocol/api'
-import { SendPicElement } from '@luckylillia/plugin-nt-protocol/api'
+import type {} from '@luckylillia-dev/plugin-sdk'
+import type {} from '@luckylillia-dev/plugin-nt-protocol/contracts'
+import { SendElement, installFFmpegBridge } from '@luckylillia-dev/plugin-nt-protocol/api'
+import { SendPicElement } from '@luckylillia-dev/plugin-nt-protocol/api'
 import { WebQQSchema } from './settings'
 
 export interface WebQQRoutesOptions {
@@ -94,7 +94,7 @@ export const WebQQ = {
   },
 }
 
-export const name = '@luckylillia/plugin-webqq'
+export const name = '@luckylillia-dev/plugin-webqq'
 export const inject = WebQQ.inject
 export const Config = WebQQSchema
 export type Config = import('./settings').WebQQSettings

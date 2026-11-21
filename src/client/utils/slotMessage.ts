@@ -1,4 +1,4 @@
-import type { WebQQMessage } from '@luckylillia/plugin-sdk/webui'
+import type { WebQQMessage } from '@luckylillia-dev/plugin-sdk/webui'
 import type { RawMessage } from '../types/webqq'
 import { getSelfUid } from './webqqApi'
 

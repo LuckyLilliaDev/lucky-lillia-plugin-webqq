@@ -1,6 +1,6 @@
 import { Context } from 'cordis'
 import { Hono } from 'hono'
-import { GroupMsgMask } from '@luckylillia/plugin-nt-protocol/api'
+import { GroupMsgMask } from '@luckylillia-dev/plugin-nt-protocol/api'
 
 /** 全部 POST + JSON; errCode / result 在这里校验, FE 不用再判断 */
 export function createActionsRoutes(ctx: Context): Hono {

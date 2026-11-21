@@ -1,4 +1,4 @@
-import { usePluginConfig } from '@luckylillia/plugin-sdk/webui'
+import { usePluginConfig } from '@luckylillia-dev/plugin-sdk/webui'
 
 /** Mirrors ../settings.ts, which the WebUI cannot import: it pulls in the host */
 interface WebQQSettings {

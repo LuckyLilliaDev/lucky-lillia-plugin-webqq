@@ -1,0 +1,134 @@
+name: Publish to npm
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+
+jobs:
+  verify:
+    name: Check, test, build and pack
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      dist-tag: ${{ steps.version.outputs.dist-tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Check release metadata
+        id: version
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, appendFileSync } from 'node:fs'
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
+          const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'))
+          const repo = 'git+https://github.com/' + process.env.GITHUB_REPOSITORY + '.git'
+          if (!pkg.name.startsWith('@luckylillia-dev/')) throw new Error('Unexpected package name ' + pkg.name)
+          if (pkg.repository?.url !== repo) throw new Error('package.json repository.url must be ' + repo)
+          if (pkg.version !== lock.version || pkg.version !== lock.packages[''].version) {
+            throw new Error('package.json and package-lock.json versions must match')
+          }
+          if (process.env.GITHUB_REF_TYPE === 'tag' && process.env.GITHUB_REF_NAME !== 'v' + pkg.version) {
+            throw new Error('Release tag must equal v' + pkg.version)
+          }
+          appendFileSync(process.env.GITHUB_OUTPUT, 'dist-tag=' + (pkg.version.includes('-') ? 'next' : 'latest') + '\n')
+          console.log('Releasing ' + pkg.name + '@' + pkg.version)
+          NODE
+
+      # Build against the NTQQ public API from source until its npm release is public.
+      - name: Checkout the NTQQ public API used for this release
+        uses: actions/checkout@v7
+        with:
+          repository: LuckyLilliaDev/lucky-lillia-plugin-ntqq-protocol
+          ref: b15b29e461180c0b7287a6608a0055e91a20da54
+          path: _integration/ntqq
+          persist-credentials: false
+
+      - name: Build the pinned NTQQ public API
+        working-directory: _integration/ntqq
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run build
+
+      - name: Install dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          node scripts/use-ntqq.mjs _integration/ntqq
+
+      - name: Check types
+        run: npm run check --if-present
+
+      - name: Test
+        run: npm run test --if-present
+
+      - name: Build and pack
+        run: |
+          npm run build
+          mkdir -p "$RUNNER_TEMP/npm-package"
+          npm pack --ignore-scripts --json --pack-destination "$RUNNER_TEMP/npm-package" > "$RUNNER_TEMP/npm-pack.json"
+          node --input-type=module <<'NODE'
+          import { readFileSync, renameSync } from 'node:fs'
+          import path from 'node:path'
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
+          const [pack] = JSON.parse(readFileSync(path.join(process.env.RUNNER_TEMP, 'npm-pack.json'), 'utf8'))
+          if (pack.name !== pkg.name || pack.version !== pkg.version) throw new Error('Packed the wrong package')
+          if (!pack.files.some(file => file.path.startsWith('lib/'))) throw new Error('The package has no lib/ build output')
+          const dir = path.join(process.env.RUNNER_TEMP, 'npm-package')
+          renameSync(path.join(dir, pack.filename), path.join(dir, 'package.tgz'))
+          console.log('Packed ' + pack.filename + ' (' + pack.files.length + ' files): ' + pack.integrity)
+          NODE
+
+      - name: Save verified package
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-package
+          path: ${{ runner.temp }}/npm-package/package.tgz
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: Publish verified package
+    needs: verify
+    # Tag pushes publish; a manual run started on a tag (gh workflow run --ref vX.Y.Z) can retry one.
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+
+      - name: Install npm with trusted publishing support
+        run: npm install --global npm@11.16.0 --ignore-scripts
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: npm-package
+          path: npm-package
+
+      - name: Publish with npm trusted publishing
+        env:
+          NPM_DIST_TAG: ${{ needs.verify.outputs.dist-tag }}
+        run: npm publish ./npm-package/package.tgz --ignore-scripts --provenance --access public --tag "$NPM_DIST_TAG"
