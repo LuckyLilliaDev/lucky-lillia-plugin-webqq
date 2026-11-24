@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useCallback, forwardRef, useImperativeHandle, useState } from 'react'
+import { assetUrl } from '../../../context'
 
 export interface RichInputItem {
   type: 'text' | 'face' | 'image' | 'at'
@@ -215,7 +216,12 @@ export const RichInput = forwardRef<RichInputRef, RichInputProps>(({
     span.dataset.type = 'face'
     span.dataset.faceId = String(faceId)
     span.className = 'inline-block align-middle mx-0.5 select-all'
-    span.innerHTML = `<img src="/face/${faceId}.png" alt="[表情]" class="w-6 h-6 inline-block" draggable="false" />`
+    const img = document.createElement('img')
+    img.src = assetUrl(`/face/${faceId}.png`)
+    img.alt = '[表情]'
+    img.className = 'w-6 h-6 inline-block'
+    img.draggable = false
+    span.appendChild(img)
     
     const selection = window.getSelection()
     if (selection && selection.rangeCount > 0) {

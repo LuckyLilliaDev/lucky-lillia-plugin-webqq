@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { assetUrl } from '../../../context'
 import { getCurrentUin } from '../../../utils/currentUin'
 
 // 可用的 QQ 表情 ID 列表（基于 public/face 目录）
@@ -184,7 +185,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onSelectEmoj
           className="w-8 h-8 flex items-center justify-center hover:bg-theme-item rounded transition-colors"
           title={`表情 ${item.faceId}`}
         >
-          <img src={`/face/${item.faceId}.png`} alt={`表情${item.faceId}`} className="w-6 h-6" />
+          <img src={assetUrl(`/face/${item.faceId}.png`)} alt={`表情${item.faceId}`} className="w-6 h-6" />
         </button>
       )
     }
@@ -242,7 +243,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onSelectEmoj
                 title={`表情 ${faceId}`}
               >
                 <img
-                  src={`/face/${faceId}.png`}
+                  src={assetUrl(`/face/${faceId}.png`)}
                   alt={`表情${faceId}`}
                   className={`w-6 h-6 transition-opacity ${loadedFaces.has(faceId) ? 'opacity-100' : 'opacity-0'}`}
                   onLoad={() => setLoadedFaces(prev => new Set(prev).add(faceId))}

@@ -7,6 +7,7 @@ import type { ChatSession, RawMessage } from '../../types/webqq'
 import { getMessages, getSelfUid, getSelfUin, getUserProfile, UserProfile, kickGroupMember, getGroupProfile, GroupProfile, quitGroup, muteGroupMember, setMemberTitle, forwardSingleMessage, forwardMultiMessages } from '../../utils/webqqApi'
 import { useWebQQStore, hasVisitedChat, markChatVisited } from '../../stores/webqqStore'
 import { getCachedMessages, setCachedMessages, appendCachedMessage, removeCachedMessage, updateCachedMessageEmojiReaction } from '../../utils/messageDb'
+import { assetUrl } from '../../context'
 import { showToast } from '../common'
 
 import { UserProfileCard } from './profile/UserProfileCard'
@@ -44,9 +45,9 @@ function getEmojiImagePath(emojiId: string): string {
   // Unicode emoji 的码点通常大于 1000（QQ 表情 ID 一般在 0-500 范围内）
   if (id > 1000) {
     const codePoint = id.toString(16)
-    return `/face/emoji-${codePoint}.png`
+    return assetUrl(`/face/emoji-${codePoint}.png`)
   }
-  return `/face/${emojiId}.png`
+  return assetUrl(`/face/${emojiId}.png`)
 }
 
 const EmojiReactionTip: React.FC<{ tip: SystemTip; onScrollToMessage: (msgSeq: string) => void }> = ({ tip, onScrollToMessage }) => {
@@ -638,7 +639,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onShowMembers, onShowF
         let allNewMessages = [...latestMessages]
         let currentBeforeMsgSeq = latestMessages[0]?.msgSeq
         let hasMore = result.hasMore
-        const cachedLatestMsgSeq = cachedMessages[cachedMessages.length - 1]?.msgSeq
+        const cachedLatestMsgSeq = [...cachedMessages].reverse().find(m => Number(m.msgSeq) > 0)?.msgSeq
 
         // 最多补 10 页 (200 条)
         for (let i = 0; i < 10 && hasMore; i++) {
@@ -783,7 +784,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ session, onShowMembers, onShowF
       (entries) => {
         const entry = entries[0]
         if (entry.isIntersecting && isScrollReadyRef.current && hasMore && !isLoadingMoreRef.current && !loading && messages.length > 0) {
-          const firstMsgSeq = messages[0]?.msgSeq
+          const firstMsgSeq = messages.find(m => Number(m.msgSeq) > 0)?.msgSeq
           if (firstMsgSeq) {
             isLoadingMoreRef.current = true
             loadMessages(firstMsgSeq).finally(() => { isLoadingMoreRef.current = false })

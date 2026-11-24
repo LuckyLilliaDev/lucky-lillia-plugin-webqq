@@ -4,6 +4,7 @@ import { Slot, useSlotMatches } from '@luckylillia-dev/plugin-sdk/webui'
 import type { RawMessage, GroupMemberItem } from '../../../types/webqq'
 import { formatMessageTime, getSelfUid, getSelfUin, getUserAvatar, getUserDisplayName, setEmojiLike } from '../../../utils/webqqApi'
 import { slotMessage } from '../../../utils/slotMessage'
+import { assetUrl } from '../../../context'
 import { MessageElementRenderer, hasValidContent, isSystemTipMessage } from './MessageElements'
 import { showToast } from '../../common'
 
@@ -72,14 +73,13 @@ export interface TempMessage {
 }
 
 // 解析戳一戳 JSON 中的 items
-const parseGrayTipItems = (message: RawMessage): { items: any[]; hasUid: boolean } | null => {
+const parseGrayTipItems = (message: RawMessage): any[] | null => {
   for (const el of message.elements) {
     if (el.grayTipElement?.jsonGrayTipElement?.jsonStr) {
       try {
         const json = JSON.parse(el.grayTipElement.jsonGrayTipElement.jsonStr)
-        if (json.items) {
-          const hasUid = json.items.some((item: any) => item.type === 'qq' && item.uid)
-          return { items: json.items, hasUid }
+        if (Array.isArray(json.items)) {
+          return json.items
         }
       } catch {
         // ignore
@@ -89,12 +89,50 @@ const parseGrayTipItems = (message: RawMessage): { items: any[]; hasUid: boolean
   return null
 }
 
+const isSelfGrayTipItem = (item: any, selfUid: string | null, selfUin: string | null): boolean => {
+  if (selfUid && item.uid && String(item.uid) === String(selfUid)) return true
+  if (selfUin && item.uin && String(item.uin) === String(selfUin)) return true
+  return false
+}
+
+const renderGrayTipItemsSync = (items: any[], selfUid: string | null, selfUin: string | null): React.ReactNode => {
+  const parts: React.ReactNode[] = []
+  let keyIndex = 0
+  for (const item of items) {
+    if (item.type === 'qq') {
+      const label = isSelfGrayTipItem(item, selfUid, selfUin) ? '你' : (item.nm || item.uin || item.uid || '')
+      if (label) parts.push(<span key={keyIndex++} className="text-blue-500">{label}</span>)
+    } else if (item.type === 'nor' && item.txt) {
+      parts.push(<span key={keyIndex++}>{item.txt}</span>)
+    } else if (item.type === 'img' && item.src) {
+      parts.push(
+        <img
+          key={keyIndex++}
+          src={item.src}
+          alt=""
+          referrerPolicy="no-referrer"
+          className="inline-block w-4 h-4 mx-0.5 align-text-bottom"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+        />,
+      )
+    }
+  }
+  return parts.length > 0 ? parts : '[系统提示]'
+}
+
 const systemTipContentCache = new Map<string, React.ReactNode>()
 
 const SystemTipMessage = memo<{ message: RawMessage; groupCode?: string }>(({ message, groupCode }) => {
-  const cachedContent = systemTipContentCache.get(message.msgId)
-  const [content, setContent] = useState<React.ReactNode>(cachedContent ?? '[系统提示]')
   const selfUid = getSelfUid()
+  const selfUin = getSelfUin()
+  const parsed = parseGrayTipItems(message)
+  const needsAsyncLookup = Boolean(
+    parsed?.some(item => item.type === 'qq' && item.uid && !item.nm && !isSelfGrayTipItem(item, selfUid, selfUin)),
+  )
+
+  const cachedContent = systemTipContentCache.get(message.msgId)
+    ?? (parsed && !needsAsyncLookup ? renderGrayTipItemsSync(parsed, selfUid, selfUin) : undefined)
+  const [content, setContent] = useState<React.ReactNode>(cachedContent ?? '[系统提示]')
 
   useEffect(() => {
     if (systemTipContentCache.has(message.msgId)) {
@@ -102,8 +140,8 @@ const SystemTipMessage = memo<{ message: RawMessage; groupCode?: string }>(({ me
       return
     }
 
-    const parsed = parseGrayTipItems(message)
-    if (!parsed) {
+    const items = parseGrayTipItems(message)
+    if (!items) {
       for (const el of message.elements) {
         if (el.grayTipElement?.xmlElement?.content) {
           const xmlContent = el.grayTipElement.xmlElement.content.replace(/<[^>]+>/g, '')
@@ -117,38 +155,29 @@ const SystemTipMessage = memo<{ message: RawMessage; groupCode?: string }>(({ me
       return
     }
 
-    const { items, hasUid } = parsed
-
-    if (!hasUid) {
-      const result = items.map((item) => item.txt || '').join('')
-      const finalContent = result || '[系统提示]'
-      systemTipContentCache.set(message.msgId, finalContent)
-      setContent(finalContent)
+    const needResolve = items.some(item => item.type === 'qq' && item.uid && !item.nm && !isSelfGrayTipItem(item, selfUid, selfUin))
+    if (!needResolve) {
+      const rendered = renderGrayTipItemsSync(items, selfUid, selfUin)
+      systemTipContentCache.set(message.msgId, rendered)
+      setContent(rendered)
       return
     }
 
     const resolveContent = async () => {
-      const parts: React.ReactNode[] = []
-      let keyIndex = 0
-      for (const item of items) {
-        if (item.type === 'qq' && item.uid) {
-          if (item.uid === selfUid) {
-            parts.push(<span key={keyIndex++} className="text-blue-500">你</span>)
-          } else {
-            const name = await getUserDisplayName(item.uid, groupCode)
-            parts.push(<span key={keyIndex++} className="text-blue-500">{name}</span>)
-          }
-        } else if (item.type === 'nor' && item.txt) {
-          parts.push(<span key={keyIndex++}>{item.txt}</span>)
+      const resolvedItems = await Promise.all(items.map(async (item) => {
+        if (item.type === 'qq' && item.uid && !item.nm && !isSelfGrayTipItem(item, selfUid, selfUin)) {
+          const name = await getUserDisplayName(item.uid, groupCode)
+          return { ...item, nm: name }
         }
-      }
-      const finalContent = parts.length > 0 ? parts : '[系统提示]'
+        return item
+      }))
+      const finalContent = renderGrayTipItemsSync(resolvedItems, selfUid, selfUin)
       systemTipContentCache.set(message.msgId, finalContent)
       setContent(finalContent)
     }
 
     resolveContent()
-  }, [message.msgId, selfUid, groupCode])
+  }, [message.msgId, selfUid, selfUin, groupCode])
 
   return (
     <div className="flex justify-center py-2">
@@ -394,9 +423,9 @@ function getEmojiImagePath(emojiId: string, emojiType: string): string {
   // emojiType '1' 是 QQ 表情 ID, '2' 是十进制的 Unicode 码点, 对应 emoji-{hex}.png
   if (emojiType === '2') {
     const codePoint = parseInt(emojiId).toString(16)
-    return `/face/emoji-${codePoint}.png`
+    return assetUrl(`/face/emoji-${codePoint}.png`)
   }
-  return `/face/${emojiId}.png`
+  return assetUrl(`/face/${emojiId}.png`)
 }
 
 const EmojiReactionList = memo<{ message: RawMessage; isSelf: boolean }>(({ message, isSelf }) => {
@@ -478,7 +507,7 @@ export const TempMessageBubble = memo<{ message: TempMessage; onRetry: () => voi
                 return (
                   <img
                     key={index}
-                    src={`/face/${item.faceId}.png`}
+                    src={assetUrl(`/face/${item.faceId}.png`)}
                     alt={`[表情${item.faceId}]`}
                     className="inline-block align-text-bottom"
                     style={{ width: 24, height: 24 }}

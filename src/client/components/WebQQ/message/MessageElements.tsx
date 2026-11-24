@@ -3,7 +3,7 @@ import { Loader2, Mic, Play, Pause, ChevronRight, X, FileText } from 'lucide-rea
 import { createPortal } from 'react-dom'
 import { Slot, type WebQQElement } from '@luckylillia-dev/plugin-sdk/webui'
 import type { MessageElement, RawMessage } from '../../../types/webqq'
-import { webui } from '../../../context'
+import { assetUrl, webui } from '../../../context'
 import { slotMessage } from '../../../utils/slotMessage'
 import { translatePttToText, getAudioBlob, getForwardMessages, getPrivateFileUrl, getSelfUid, getUserAvatar } from '../../../utils/webqqApi'
 import type { ForwardMessageItem, ForwardMessageSegment } from '../../../utils/webqqApi'
@@ -134,7 +134,7 @@ const BuiltinElement = memo<{ element: MessageElement; message?: RawMessage }>((
     const faceText = element.faceElement.faceText
     return (
       <img
-        src={`/face/${faceId}.png`}
+        src={assetUrl(`/face/${faceId}.png`)}
         alt={faceText || `[表情${faceId}]`}
         title={faceText || `表情${faceId}`}
         className="inline-block align-text-bottom"
@@ -584,7 +584,7 @@ const ForwardSegmentRenderer: React.FC<{ segment: ForwardMessageSegment }> = ({ 
   if (segment.type === 'face' && segment.data.faceId !== undefined) {
     return (
       <img
-        src={`/face/${segment.data.faceId}.png`}
+        src={assetUrl(`/face/${segment.data.faceId}.png`)}
         alt={`[表情${segment.data.faceId}]`}
         className="inline-block align-text-bottom"
         style={{ width: 24, height: 24 }}

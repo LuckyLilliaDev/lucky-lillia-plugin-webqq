@@ -13,3 +13,13 @@ export function webui(): WebUIContext {
 }
 
 export const showToast = (message: string, type?: 'success' | 'error' | 'warning') => webui().toast(message, type)
+
+/** Resolves a public path (e.g. `/face/0.png`) under the gateway's `/i/<instance>` prefix when present. */
+export function assetUrl(path: string): string {
+  const ctx = current as (WebUIContext & { url?(p: string): string }) | undefined
+  if (ctx?.url) return ctx.url(path)
+  if (!path.startsWith('/') || path.startsWith('//') || path.startsWith('/i/')) return path
+  const pathname = typeof location === 'undefined' ? '' : location.pathname
+  const match = /^\/i\/([^/]+)(?:\/|$)/.exec(pathname)
+  return match ? `/i/${match[1]}${path}` : path
+}

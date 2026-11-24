@@ -4,7 +4,7 @@ import ChatWindow from './ChatWindow'
 import GroupMemberPanel from './contact/GroupMemberPanel'
 import GroupFilePanel from './contact/GroupFilePanel'
 import type { ChatSession, FriendItem, GroupItem, RecentChatItem, RawMessage } from '../../types/webqq'
-import { createEventSource, getSelfUin, getUserAvatar } from '../../utils/webqqApi'
+import { createEventSource, getSelfUid, getSelfUin, getUserAvatar } from '../../utils/webqqApi'
 import { useWebQQStore, resetVisitedChats } from '../../stores/webqqStore'
 import { appendCachedMessage, updateCachedMessageEmojiReaction, markCachedMessageAsRecalled } from '../../utils/messageDb'
 import { showToast } from '../common'
@@ -50,6 +50,36 @@ function extractMessageSummary(rawMessage: RawMessage): string {
     if (element.multiForwardMsgElement) {
       summaryParts.push('[聊天记录]')
       continue
+    }
+    if (element.grayTipElement?.jsonGrayTipElement?.jsonStr) {
+      try {
+        const json = JSON.parse(element.grayTipElement.jsonGrayTipElement.jsonStr)
+        if (Array.isArray(json.items)) {
+          const selfUid = getSelfUid()
+          const selfUin = getSelfUin()
+          const tip = json.items
+            .map((item: any) => {
+              if (item.type === 'qq') {
+                const isSelf = (selfUid && item.uid === selfUid) || (selfUin && String(item.uin) === String(selfUin))
+                return isSelf ? '你' : (item.nm || item.uin || '')
+              }
+              return item.type === 'nor' ? (item.txt || '') : ''
+            })
+            .join('')
+            .trim()
+          if (tip) {
+            summaryParts.push(tip)
+            continue
+          }
+        }
+      } catch { /* ignore */ }
+    }
+    if (element.grayTipElement?.xmlElement?.content) {
+      const xmlText = element.grayTipElement.xmlElement.content.replace(/<[^>]+>/g, '').trim()
+      if (xmlText) {
+        summaryParts.push(xmlText)
+        continue
+      }
     }
     if (element.arkElement) {
       try {
@@ -210,7 +240,11 @@ const WebQQPage: React.FC<{ isFullscreen?: boolean }> = ({ isFullscreen = false 
               pendingMessagesRef.current.push(rawMessage)
             }
           } else {
-            incrementUnreadCount(chatKey)
+            const selfUid = getSelfUid()
+            const selfUin = getSelfUin()
+            const isSelfSent = (selfUid && rawMessage.senderUid === selfUid)
+              || (selfUin && String(rawMessage.senderUin) === String(selfUin))
+            if (!isSelfSent) incrementUnreadCount(chatKey)
           }
 
           const lastMessage = extractMessageSummary(rawMessage)
