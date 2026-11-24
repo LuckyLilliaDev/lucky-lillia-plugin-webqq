@@ -19,7 +19,7 @@ function stub(name: string, fields: Record<string, unknown> = {}) {
 }
 class MockWebui extends Service {
   constructor(ctx: Context) { super(ctx, 'webuiServer') }
-  route(prefix: string, handler: FetchHandler) {
+  route(prefix: string, handler: FetchHandler, _options?: { public?: boolean }) {
     return this.ctx.effect(() => { routes.set(prefix, handler); return () => { routes.delete(prefix) } })
   }
 }
@@ -28,7 +28,12 @@ beforeEach(async () => {
   ctx = new Context()
   routes = new Map()
   ctx.accessor('storage', { get: () => ({ dir: async () => directory }) })
-  app = new Hono().use('*', c => routes.get('/api/webqq')?.fetch(c.req.raw) ?? c.json({ success: false }, 404))
+  app = new Hono().use('*', (c) => {
+    for (const [prefix, handler] of routes) {
+      if (c.req.path === prefix || c.req.path.startsWith(`${prefix}/`)) return handler.fetch(c.req.raw)
+    }
+    return c.json({ success: false }, 404)
+  })
   for (const name of ['app', 'store', 'ntMsgApi', 'ntFileApi', 'ntUserApi', 'ntGroupApi', 'ntFriendApi']) await ctx.plugin(stub(name))
   protocol = await ctx.plugin(stub('qqProtocol', { selfInfo: { uid: 'test-uid', uin: '123456', nick: 'TestBot', online: true } }))
   await ctx.plugin(MockWebui)
@@ -84,5 +89,19 @@ describe('standalone WebQQ lifecycle', () => {
     await entry
     expect(entry.state).toBe(FiberState.PENDING)
     expect((await request('/api/webqq/self')).status).toBe(404)
+  })
+
+  it('serves bundled face assets under /face and unmounts them on unload', async () => {
+    expect((await request('/face/0.png')).status).toBe(404)
+    const entry = await ctx.plugin(WebQQ)
+    const ok = await request('/face/0.png')
+    expect(ok.status).toBe(200)
+    expect(ok.headers.get('content-type')).toBe('image/png')
+    expect(ok.headers.get('cache-control')).toContain('immutable')
+    expect((await ok.arrayBuffer()).byteLength).toBeGreaterThan(0)
+    expect((await request('/face/nonexistent.png')).status).toBe(404)
+    expect((await request('/face/..%2Ficon.svg')).status).toBe(404)
+    await entry.dispose()
+    expect((await request('/face/0.png')).status).toBe(404)
   })
 })

@@ -7,6 +7,7 @@ import { createNotificationRoutes } from './notifications'
 import { createChatsRoutes } from './chats'
 import { createActionsRoutes } from './actions'
 import { createGroupFilesRoutes } from './groupFiles'
+import { createFaceRoutes } from './face'
 import { forwardEvents } from './events'
 import { Hono } from 'hono'
 import { SSEStreamingApi, streamSSE } from 'hono/streaming'
@@ -86,6 +87,7 @@ export const WebQQ = {
       }
     }
     ctx.webuiServer.route('/api/webqq', new Hono().route('/api/webqq', createWebQQRoutes(ctx, { uploadDir, sseClients, createPicElement })))
+    ctx.webuiServer.route('/face', new Hono().route('/face', createFaceRoutes()), { public: true })
     forwardEvents(ctx, sseClients)
     // Pages still connected would otherwise wait on a stream nothing writes to any more
     ctx.effect(() => () => {
