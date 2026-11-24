@@ -1,6 +1,6 @@
 {
   "name": "@luckylillia-dev/plugin-webqq",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "在 LuckyLillia WebUI 中像 QQ 客户端一样收发 NTQQ 消息",
   "main": "./lib/index.js",
